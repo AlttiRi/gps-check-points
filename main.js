@@ -1,17 +1,33 @@
-function main() {
-    navigator.geolocation.getCurrentPosition(function(location) {
-        const obj = {};
-        for (const key in location.coords) {
-            if (location.coords[key] === null) {
-                continue;
+void main();
+document.querySelector("html").onclick = main;
+
+
+async function main() {
+    const obj = await getCoords();
+    document.querySelector(".main").textContent = JSON.stringify(obj, null, " ");
+}
+
+
+/** @return {Promise<GeolocationCoordinates>} */
+async function getCoords() {
+    return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(function(location, error) {
+            if (error) {
+                reject(error);
             }
-            obj[key] = location.coords[key];
-        }
-        console.log(location.coords);
-        document.querySelector(".main").textContent = JSON.stringify(obj, null, " ");
+            resolve(objCoord(location.coords));
+        });
     });
 }
 
-main();
-
-document.querySelector("html").onclick = main;
+/** @param {GeolocationCoordinates} coords */
+function objCoord(coords) {
+    const obj = {};
+    for (const key in coords) {
+        if (coords[key] === null) {
+            continue;
+        }
+        obj[key] = coords[key];
+    }
+    return obj;
+}
