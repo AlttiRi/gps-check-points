@@ -80,8 +80,8 @@ function isObject(target: any): target is object {
             <tr v-for="[k, v] of Object.entries(objectify(coordObj.coords)).filter(([_k, _v]) => _v)">
                 <td>{{ k }}</td>: <td>{{ v }}</td>
             </tr>
-            <tr>
-                <td>timestamp</td>: <td>{{ coordObj.timestamp }}</td>
+            <tr class="date">
+                <td>timestamp</td>: <td>{{ formatDate(coordObj.timestamp, "YYYY.MM.DD HH:mm:SS", false) }}</td>
             </tr>
         </table>
     </div>
