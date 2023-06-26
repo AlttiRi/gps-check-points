@@ -16,6 +16,7 @@ const savedPoints: Ref<GeolocationPosition[]> = ref([]);
             coords: gpsEntry[1],
         });
     }
+    savedPoints.value = savedPoints.value.reverse()
 }();
 
 
@@ -60,7 +61,7 @@ async function onSaveClick() {
     }
     try {
         await set(coordObj.value.timestamp, objectify(coordObj.value.coords), gpsPointsStore);
-        savedPoints.value.push(objectify(coordObj.value));
+        savedPoints.value.unshift(objectify(coordObj.value));
         saved.value = true;
     } catch (e) {
         alert(JSON.stringify(objectify(e), null, "  "));
