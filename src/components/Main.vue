@@ -118,7 +118,6 @@ async function importPoints(data: string) {
 //@ts-ignore
 globalThis.importPoints = importPoints;
 
-// for example, "https://www.google.ru/maps/@{latitude},{longitude},17z"
 const template = ref(localStorage.getItem("gps-pattern-url") || "");
 watch(template, value => {
     localStorage.setItem("gps-pattern-url", value);
@@ -153,7 +152,7 @@ const link = computed(() => {
     </div>
     <div class="saved">
         <hr>
-        <input type="text" v-model="template" name="coord-pattern-url" spellcheck="false" :class="{red: badTemplate}">
+        <input type="text" v-model="template" name="coord-pattern-url" spellcheck="false" :class="{red: badTemplate}" placeholder="https://google.com/maps/@{latitude},{longitude},17z">
         <div v-if="template && coordObj">
             <a :href="link" target="_blank" rel="noopener noreferrer">{{ link }}</a>
         </div>
