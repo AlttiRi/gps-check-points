@@ -31,7 +31,7 @@ async function onClick() {
     try {
         coordObj.value = await getCoords();
     } catch (e) {
-        alert(e);
+        alert(objectify(e as GeolocationPositionError));
     }
 }
 onClick();
