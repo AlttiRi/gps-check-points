@@ -70,4 +70,7 @@ button {
     outline: 0;
     margin: 5px;
 }
+button:active {
+    box-shadow: 0 0 3px grey;
+}
 </style>
