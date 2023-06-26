@@ -37,7 +37,7 @@ async function onClick() {
         alert(JSON.stringify(objectify(e as GeolocationPositionError), null, "  "));
     }
 }
-onClick();
+void onClick();
 
 function isObject(target: any): target is object {
     return typeof target === "object" && !Array.isArray(target) && target !== null;
