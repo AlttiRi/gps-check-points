@@ -71,12 +71,39 @@ async function onSaveClick() {
 function isObject(target: any): target is object {
     return typeof target === "object" && !Array.isArray(target) && target !== null;
 }
+
+async function exportPoints() {
+    const copySavedPoints = [...savedPoints.value];
+    copySavedPoints.sort((p1, p2) => p1.timestamp - p2.timestamp);
+    const text = JSON.stringify(copySavedPoints);
+    console.log(text);
+    return text;
+}
+
+async function onSharePoints() {
+    if (!navigator.canShare) {
+        alert("Sharing ia not supported");
+        return;
+    }
+    const share: ShareData = {text: await exportPoints()};
+    if (navigator.canShare(share)) {
+        alert("Can't share");
+        return;
+    }
+    try {
+        await navigator.share(share);
+    } catch (e) {
+        alert(JSON.stringify(objectify(e), null, "  "));
+    }
+}
+
 </script>
 
 <template>
     <div class="main">
         <button @click="onUpdateClick">Update Point</button>
         <button @click="onSaveClick" :disabled="saved">Save Point</button>
+        <button @click="onSharePoints" >Share</button>
         <table class="coord" v-if="coordObj">
             <tr v-for="[k, v] of Object.entries(objectify(coordObj.coords)).filter(([_k, _v]) => _v)">
                 <td>{{ k }}</td>: <td>{{ v }}</td>
