@@ -1,6 +1,21 @@
 {
   "name": "gps-check-points",
   "version": "0.0.0-dev",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "serve": "vite preview",
+    "build-serve": "vite build && vite preview"
+  },
   "dependencies": {
+    "@alttiri/util-js": "1.8.4",
+    "idb-keyval": "6.2.1",
+    "vue": "3.3.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "4.2.3",
+    "sass": "1.63.6",
+    "vite": "4.3.9"
   }
 }
