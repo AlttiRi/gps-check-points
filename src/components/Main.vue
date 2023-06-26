@@ -1,7 +1,23 @@
 <script setup lang="ts">
 import {Ref, ref} from "vue";
+import {set, entries, createStore} from "idb-keyval";
+import {formatDate} from "@alttiri/util-js";
+
+const gpsPointsStore = createStore("GPS_Points_DB", "GPS_Points");
 
 const coordObj: Ref<GeolocationPosition | undefined> = ref();
+const savedPoints: Ref<GeolocationPosition[]> = ref([]);
+
+!async function loadSavedPoints() {
+    const gpsEntries: Array<[number, GeolocationCoordinates]> = await entries(gpsPointsStore);
+    for (const gpsEntry of gpsEntries) {
+        savedPoints.value.push({
+            timestamp: gpsEntry[0],
+            coords: gpsEntry[1],
+        });
+    }
+}();
+
 
 async function getCoords(): Promise<GeolocationPosition> {
     return new Promise((resolve, reject) => {
@@ -30,21 +46,22 @@ function objectify<T>(target: T): T {
 async function onUpdateClick() {
     try {
         coordObj.value = await getCoords();
+        saved.value = false;
     } catch (e) {
         alert(JSON.stringify(objectify(e as GeolocationPositionError), null, "  "));
     }
 }
 void onUpdateClick();
 
-
-import {get, set, del, entries, createStore} from "idb-keyval";
-const urlInfoStore = createStore("GPS_Points_DB", "GPS_Points");
+const saved = ref(false);
 async function onSaveClick() {
     if (!coordObj.value) {
         return;
     }
     try {
-        await set(coordObj.value.timestamp, objectify(coordObj.value.coords), urlInfoStore);
+        await set(coordObj.value.timestamp, objectify(coordObj.value.coords), gpsPointsStore);
+        savedPoints.value.push(objectify(coordObj.value));
+        saved.value = true;
     } catch (e) {
         alert(JSON.stringify(objectify(e), null, "  "));
     }
@@ -58,7 +75,7 @@ function isObject(target: any): target is object {
 <template>
     <div class="main">
         <button @click="onUpdateClick">Update Point</button>
-        <button @click="onSaveClick">Save Point</button>
+        <button @click="onSaveClick" :disabled="saved">Save Point</button>
         <table class="coord" v-if="coordObj">
             <tr v-for="[k, v] of Object.entries(objectify(coordObj.coords)).filter(([_k, _v]) => _v)">
                 <td>{{ k }}</td>: <td>{{ v }}</td>
@@ -67,6 +84,18 @@ function isObject(target: any): target is object {
                 <td>timestamp</td>: <td>{{ coordObj.timestamp }}</td>
             </tr>
         </table>
+    </div>
+    <div class="saved">
+        <div class="saved-coord" v-if="savedPoints.length">
+            <hr>
+            <div v-for="point of savedPoints">
+                <div class="date">{{ formatDate(point.timestamp, "YYYY.MM.DD HH:mm:SS", false) }}</div>
+                <div v-for="[k, v] of Object.entries(point.coords).filter(([_k, _v]) => _v)">
+                    <span>{{ k }}</span>: <span>{{ v }}</span>
+                </div>
+                <hr>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -87,5 +116,11 @@ button {
 }
 button:active {
     box-shadow: 0 0 3px grey;
+}
+button[disabled] {
+    background-color: gray;
+}
+.date {
+    color: grey;
 }
 </style>
