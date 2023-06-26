@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Ref, ref} from "vue";
+import {computed, Ref, ref, watch} from "vue";
 import {set, entries, createStore} from "idb-keyval";
 import {formatDate} from "@alttiri/util-js";
 
@@ -83,6 +83,7 @@ async function exportPoints() {
 
 import * as fflate from "fflate";
 import {encodeBase85, decodeBase85} from "@alttiri/base85";
+import {renderTemplateString} from "../util";
 
 async function onSharePoints() {
     const pointsText = await exportPoints();
@@ -116,6 +117,24 @@ async function importPoints(data: string) {
 
 //@ts-ignore
 globalThis.importPoints = importPoints;
+
+// for example, "https://www.google.ru/maps/@{latitude},{longitude},17z"
+const template = ref(localStorage.getItem("gps-pattern-url") || "");
+watch(template, value => {
+    localStorage.setItem("gps-pattern-url", value);
+});
+
+const badTemplate = ref(false);
+const link = computed(() => {
+    if (!coordObj.value) {
+        badTemplate.value = false;
+        return "";
+    }
+    const result = renderTemplateString(template.value, coordObj.value.coords);
+    badTemplate.value = result.hasUndefined;
+    return result.value;
+});
+
 </script>
 
 <template>
@@ -133,12 +152,20 @@ globalThis.importPoints = importPoints;
         </table>
     </div>
     <div class="saved">
+        <hr>
+        <input type="text" v-model="template" name="coord-pattern-url" spellcheck="false" :class="{red: badTemplate}">
+        <div v-if="template && coordObj">
+            <a :href="link" target="_blank" rel="noopener noreferrer">{{ link }}</a>
+        </div>
         <div class="saved-coord" v-if="savedPoints.length">
             <hr>
-            <div v-for="point of savedPoints">
+            <div v-for="point of savedPoints" class="entry">
                 <div class="date">{{ formatDate(point.timestamp, "YYYY.MM.DD HH:mm:SS", false) }}</div>
                 <div v-for="[k, v] of Object.entries(point.coords).filter(([_k, _v]) => _v)">
                     <span>{{ k }}</span>: <span>{{ v }}</span>
+                </div>
+                <div class="out-link" v-if="template">
+                    <a :href="renderTemplateString(template, point.coords).value" target="_blank" rel="noopener noreferrer">link</a>
                 </div>
                 <hr>
             </div>
@@ -147,6 +174,35 @@ globalThis.importPoints = importPoints;
 </template>
 
 <style scoped lang="scss">
+.red {
+    border-color: red;
+}
+.entry {
+    position: relative;
+    .out-link {
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
+    }
+}
+.entry:not(:hover) {
+    .out-link {
+        display: none;
+    }
+}
+input {
+    font-size: 16px;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    box-shadow: none;
+    margin-bottom: 5px;
+
+    width: 100%;
+    box-sizing: border-box;
+}
+
 button {
     background-color: #4CAF50;
     border: none;
