@@ -82,14 +82,12 @@ async function exportPoints() {
 
 async function onSharePoints() {
     if (!navigator.canShare) {
-        alert("Sharing ia not supported");
+        alert("Sharing is not supported");
         return;
     }
-    const share: ShareData = {text: await exportPoints()};
-    if (navigator.canShare(share)) {
-        alert("Can't share");
-        return;
-    }
+    const share: ShareData = {
+        title: btoa(await exportPoints()),
+    };
     try {
         await navigator.share(share);
     } catch (e) {
