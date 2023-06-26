@@ -80,13 +80,23 @@ async function exportPoints() {
     return text;
 }
 
+import * as fflate from "fflate";
+import {encode} from "@alttiri/base85";
+
 async function onSharePoints() {
     if (!navigator.canShare) {
         alert("Sharing is not supported");
         return;
     }
+
+    const text = encode(await new Promise<Uint8Array>(async (resolve) => {
+        return fflate.deflate(new TextEncoder().encode(await exportPoints()), (err, data) => {
+            resolve(data);
+        });
+    }));
+
     const share: ShareData = {
-        title: btoa(await exportPoints()),
+        title: text,
     };
     try {
         await navigator.share(share);

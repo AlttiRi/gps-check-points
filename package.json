@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@alttiri/util-js": "1.8.4",
+    "@alttiri/base85": "1.5.1",
+    "fflate": "^0.8.0",
     "idb-keyval": "6.2.1",
     "vue": "3.3.4"
   },
