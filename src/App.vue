@@ -1,6 +1,6 @@
 <template>
     <Main/>
-    <a class="readme" title="Open Readme" href="https://github.com/AlttiRi/gps-test" target="_blank"><i>i</i></a>
+    <a class="readme" title="Open Readme" href="https://github.com/AlttiRi/gps-check-points" target="_blank"><i>i</i></a>
 </template>
 
 <script setup lang="ts">
