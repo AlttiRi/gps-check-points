@@ -28,7 +28,11 @@ function objectify<T>(target: T): T {
 }
 
 async function onClick() {
-    coordObj.value = await getCoords();
+    try {
+        coordObj.value = await getCoords();
+    } catch (e) {
+        alert(e);
+    }
 }
 onClick();
 
