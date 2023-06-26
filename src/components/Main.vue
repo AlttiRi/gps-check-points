@@ -27,14 +27,28 @@ function objectify<T>(target: T): T {
     return obj as T;
 }
 
-async function onClick() {
+async function onUpdateClick() {
     try {
         coordObj.value = await getCoords();
     } catch (e) {
         alert(JSON.stringify(objectify(e as GeolocationPositionError), null, "  "));
     }
 }
-void onClick();
+void onUpdateClick();
+
+
+import {get, set, del, entries, createStore} from "idb-keyval";
+const urlInfoStore = createStore("GPS_Points_DB", "GPS_Points");
+async function onSaveClick() {
+    if (!coordObj.value) {
+        return;
+    }
+    try {
+        await set(coordObj.value.timestamp, objectify(coordObj.value.coords), urlInfoStore);
+    } catch (e) {
+        alert(JSON.stringify(objectify(e), null, "  "));
+    }
+}
 
 function isObject(target: any): target is object {
     return typeof target === "object" && !Array.isArray(target) && target !== null;
@@ -43,7 +57,8 @@ function isObject(target: any): target is object {
 
 <template>
     <div class="main">
-        <button @click="onClick">Update Point</button>
+        <button @click="onUpdateClick">Update Point</button>
+        <button @click="onSaveClick">Save Point</button>
         <table class="coord" v-if="coordObj">
             <tr v-for="[k, v] of Object.entries(objectify(coordObj.coords)).filter(([_k, _v]) => _v)">
                 <td>{{ k }}</td>: <td>{{ v }}</td>
