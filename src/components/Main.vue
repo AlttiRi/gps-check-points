@@ -31,7 +31,7 @@ async function onClick() {
     try {
         coordObj.value = await getCoords();
     } catch (e) {
-        alert(objectify(e as GeolocationPositionError));
+        alert(JSON.stringify(objectify(e as GeolocationPositionError), null, "  "));
     }
 }
 onClick();
@@ -45,7 +45,7 @@ function isObject(target: any): target is object {
     <div class="main">
         <button @click="onClick">Update Point</button>
         <table class="coord" v-if="coordObj">
-            <tr v-for="[k, v] of Object.entries(objectify(coordObj.coords)).filter(([k, v]) => v)">
+            <tr v-for="[k, v] of Object.entries(objectify(coordObj.coords)).filter(([_k, _v]) => _v)">
                 <td>{{ k }}</td>: <td>{{ v }}</td>
             </tr>
             <tr>
