@@ -8,8 +8,9 @@ const gpsPointsStore = createStore("GPS_Points_DB", "GPS_Points");
 const coordObj: Ref<GeolocationPosition | undefined> = ref();
 const savedPoints: Ref<GeolocationPosition[]> = ref([]);
 
-!async function loadSavedPoints() {
+async function loadSavedPoints() {
     const gpsEntries: Array<[number, GeolocationCoordinates]> = await entries(gpsPointsStore);
+    savedPoints.value = [];
     for (const gpsEntry of gpsEntries) {
         savedPoints.value.push({
             timestamp: gpsEntry[0],
@@ -17,8 +18,8 @@ const savedPoints: Ref<GeolocationPosition[]> = ref([]);
         });
     }
     savedPoints.value = savedPoints.value.reverse()
-}();
-
+}
+void loadSavedPoints();
 
 async function getCoords(): Promise<GeolocationPosition> {
     return new Promise((resolve, reject) => {
@@ -81,22 +82,21 @@ async function exportPoints() {
 }
 
 import * as fflate from "fflate";
-import {encode} from "@alttiri/base85";
+import {encodeBase85, decodeBase85} from "@alttiri/base85";
 
 async function onSharePoints() {
+    const pointsText = await exportPoints();
+    const pointsTextEnc = encodeBase85(fflate.deflateSync(new TextEncoder().encode(pointsText)));
+
     if (!navigator.canShare) {
         alert("Sharing is not supported");
+        console.log("pointsTextEnc");
+        console.log(pointsTextEnc);
         return;
     }
 
-    const text = encode(await new Promise<Uint8Array>(async (resolve) => {
-        return fflate.deflate(new TextEncoder().encode(await exportPoints()), (err, data) => {
-            resolve(data);
-        });
-    }));
-
     const share: ShareData = {
-        title: text,
+        title: pointsTextEnc,
     };
     try {
         await navigator.share(share);
@@ -104,7 +104,18 @@ async function onSharePoints() {
         alert(JSON.stringify(objectify(e), null, "  "));
     }
 }
+async function importPoints(data: string) {
+    const json = new TextDecoder().decode(fflate.inflateSync(decodeBase85(data)));
+    const entries: GeolocationPosition[] = JSON.parse(json);
+    console.log(entries);
+    for (const entry of entries) {
+        await set(entry.timestamp, objectify(entry.coords), gpsPointsStore);
+    }
+    await loadSavedPoints();
+}
 
+//@ts-ignore
+globalThis.importPoints = importPoints;
 </script>
 
 <template>
